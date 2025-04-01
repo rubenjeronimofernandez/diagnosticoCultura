@@ -185,8 +185,106 @@ function calcularResultados($conn, $participante_id) {
     ];
 }
 
-// Función para mostrar resultados
+$culturas_info = [
+    'Clan' => [
+        'tipo' => 'Organizativa',
+        'diagnostico' => 'Entorno colaborativo donde prima la confianza, lealtad y sentido de familia. Los líderes actúan como mentores y se valora el desarrollo humano. El éxito se mide por el bienestar de las personas y la satisfacción del cliente.',
+        'lider' => 'Facilitador: Promueve la participación. Mentor: Invierte en desarrollo individual. Team builder: Fomenta la cohesión.',
+        'impulsores_valor' => 'Compromiso emocional. Comunicación abierta. Desarrollo continuo.',
+        'teoria_efectividad' => 'La participación y el capital humano generan productividad a largo plazo (Teoría Y de McGregor).',
+        'estrategias_calidad' => 'Programas de mentoría. Reuniones de feedback 360°. Encuestas de clima laboral. Celebración de rituales grupales.',
+        'conclusion' => 'La cultura Clan es la más consolidada, con alto consenso en valores colaborativos. Ideal para sectores como educación o ONGs, pero puede necesitar reforzar enfoques estratégicos (ej: alinear objetivos individuales con metas organizacionales).'
+    ],
+    'Adhocracia' => [
+        'tipo' => 'Organizativa',
+        'diagnostico' => 'Entorno dinámico e innovador donde se premia la creatividad y la asunción de riesgos. Los líderes son visionarios y la organización se adapta rápidamente a cambios. El éxito se define por la innovación disruptiva.',
+        'lider' => 'Visionario: Inspira con ideas audaces. Innovador: Experimenta y aprende del fracaso. Catalizador: Conecta talentos diversos.',
+        'impulsores_valor' => 'Creatividad. Agilidad. Tolerancia al error.',
+        'teoria_efectividad' => 'La innovación continua es clave para la supervivencia (Teoría de la Adaptación de Darwin aplicada a organizaciones).',
+        'estrategias_calidad' => 'Hackathons y laboratorios de ideas. Presupuestos para proyectos piloto. Métricas de aprendizaje (ej: "tasa de experimentación"). Reducción de burocracia.',
+        'conclusion' => 'Esta cultura es percibida como deseable pero inconsistente en su implementación. Sectores como startups o tecnología la priorizan, pero requiere equilibrar libertad con enfoque estratégico para evitar caos.'
+    ],
+    'Mercado' => [
+        'tipo' => 'Organizativa',
+        'diagnostico' => 'Entorno competitivo orientado a resultados tangibles (ventas, cuotas, ROI). Los líderes son exigentes y la organización se compara con rivales. El éxito equivale a ganar mercado.',
+        'lider' => 'Competitivo: Enfocado en superar metas. Negociador: Busca acuerdos rentables. Result-oriented: Recompensa el desempeño.',
+        'impulsores_valor' => 'Eficiencia. Rentabilidad. Posicionamiento.',
+        'teoria_efectividad' => 'La competencia externa impulsa la excelencia (Teoría de la Eficiencia de Porter).',
+        'estrategias_calidad' => 'Bonos por objetivos. Benchmarking constante. Entrenamiento en habilidades comerciales. CRM para tracking de desempeño.',
+        'conclusion' => 'Necesaria en entornos altamente competitivos (ej: retail, finanzas), pero puede erosionar el bienestar si no se complementa con prácticas de Clan. Ideal para roles comerciales.'
+    ],
+    'Jerarquía' => [
+        'tipo' => 'Organizativa',
+        'diagnostico' => 'Entorno estructurado con reglas claras, procesos estandarizados y roles definidos. Los líderes son coordinadores que garantizan estabilidad. El éxito significa precisión y control de riesgos.',
+        'lider' => 'Coordinador: Asegura el cumplimiento de normas. Administrador: Optimiza recursos. Planificador: Anticipa riesgos.',
+        'impulsores_valor' => 'Predictibilidad. Estandarización. Seguridad.',
+        'teoria_efectividad' => 'El control de procesos reduce errores (Teoría Burocrática de Weber).',
+        'estrategias_calidad' => 'Certificaciones ISO. Manuales de procedimiento. Auditorías internas. Mapas de riesgos.',
+        'conclusion' => 'Esencial en industrias reguladas (ej: salud, aeronáutica), pero puede limitar la innovación. Recomendable modernizarla con herramientas digitales (ej: automatización) para ganar agilidad.'
+    ]
+];
+
+$aprendizajes_info = [
+    'Aprendizaje continuo' => [
+        'tipo' => 'Aprendizaje',
+        'diagnostico' => 'La mejora constante es norma, no excepción. Los empleados dedican horas semanales a capacitarse sin necesidad de mandato.',
+        'lider' => 'Role model: Comparte abiertamente sus propias brechas. Curiosity agent: Premia preguntas más que respuestas.',
+        'impulsores_valor' => 'Bibliotecas de nanodegrees. Learning days obligatorios. Badges digitales por habilidades.',
+        'teoria_efectividad' => 'En la economía del conocimiento, el aprendizaje es la única ventaja sostenible (Drucker, 1993).',
+        'estrategias_calidad' => 'Suscripciones corporativas a Coursera/Pluralsight. Book clubs con autores invitados. Shadowing internacional.',
+        'conclusion' => 'Marcador de cultura High-Performance. Común en tech (ej: Amazon). Requiere tiempo protegido en la agenda.'
+    ],
+    'Aprendizaje en equipo' => [
+        'tipo' => 'Aprendizaje',
+        'diagnostico' => 'Los equipos aprenden juntos mediante colaboración, retroalimentación continua y metas compartidas. Se valora la sinergia sobre el desempeño individual.',
+        'lider' => 'Team learner: Diseña proyectos que requieran interdependencia. Feedback coach: Enseña a dar/recibir críticas constructivas.',
+        'impulsores_valor' => 'Confianza psicológica. Metodologías ágiles (ej: retrospectivas). Herramientas colaborativas (Miro, Slack).',
+        'teoria_efectividad' => 'Los equipos que aprenden superan a la suma de sus partes (Peter Senge, La Quinta Disciplina).',
+        'estrategias_calidad' => 'Talleres de co-creación con roles rotativos. Plataformas para compartir tribal knowledge. Premios al "Mejor docente interno".',
+        'conclusion' => 'Esencial para organizaciones matriciales. Riesgo: convertir el aprendizaje en actividad social sin resultados tangibles.'
+    ],
+    'Dirección estratégica' => [
+        'tipo' => 'Aprendizaje',
+        'diagnostico' => 'El aprendizaje está alineado con objetivos de negocio claros. Se invierte solo en lo que genera ventaja competitiva.',
+        'lider' => 'Estratega: Vincula capacitación a KPIs. Business partner: Traduce lenguaje técnico a ROI.',
+        'impulsores_valor' => 'Balanced Scorecard de aprendizaje. Customer-centric training. Alianzas con universidades para skills del futuro.',
+        'teoria_efectividad' => 'El aprendizaje debe crear ventajas difíciles de imitar (Resource-Based View, Barney 1991).',
+        'estrategias_calidad' => 'Certificaciones pagadas por resultados. Microlearning just-in-time. Planes de sucesión basados en skills.',
+        'conclusion' => 'Crítico en consultorías y scale-ups. Puede descuidar desarrollo humano si se extremiza.'
+    ],
+    'Empoderamiento' => [
+        'tipo' => 'Aprendizaje',
+        'diagnostico' => 'Los empleados tienen autonomía para probar ideas, acceder a recursos y tomar decisiones sin jerarquías rígidas.',
+        'lider' => 'Delegador estratégico: Asigna retos, no tareas. Abogado del riesgo: Protege a los equipos de sanciones por fracasos.',
+        'impulsores_valor' => 'Presupuestos de innovación descentralizados. Mecanismos ágiles de aprobación (ej: pitch rápido). Intraemprendimiento.',
+        'teoria_efectividad' => 'La autonomía es el mejor predictor de engagement (Teoría de la Autodeterminación, Deci & Ryan).',
+        'estrategias_calidad' => 'Hackathons con presupuesto ejecutable. 20% time (ej: Google). Matriz de delegación (niveles de autonomía).',
+        'conclusion' => 'Clave en startups y empresas digitales. Contraindicado en industrias altamente reguladas sin salvaguardas.'
+    ],
+    'Investigación y diálogo' => [
+        'tipo' => 'Aprendizaje',
+        'diagnostico' => 'La organización fomenta preguntas críticas, debates abiertos y exploración de supuestos. Las conversaciones se basan en datos y diversidad de perspectivas.',
+        'lider' => 'Facilitador dialógico: Crea espacios seguros para discusiones incómodas. Investigador: Promueve el uso de evidencias, no de opiniones.',
+        'impulsores_valor' => 'Curiosidad institucionalizada. Tolerancia al disenso. Métodos científicos (ej: experimentos controlados).',
+        'teoria_efectividad' => 'El diálogo deliberativo genera inteligencia colectiva (Habermas, 1984).',
+        'estrategias_calidad' => 'Foros mensuales "Sin preguntas tontas". Bibliotecas de casos de estudio con lecciones. Técnicas de pensamiento crítico (ej: Five Whys).',
+        'conclusion' => 'Indicador de madurez organizacional. Común en universidades y empresas de I+D. Requiere equilibrarse con dirección estratégica para evitar parálisis por análisis.'
+    ],
+    'Sistema integrado' => [
+        'tipo' => 'Aprendizaje',
+        'diagnostico' => 'El aprendizaje se captura en sistemas digitales, procesos estandarizados y métricas para evitar la reinvención de la rueda.',
+        'lider' => 'Arquitecto del conocimiento: Diseña flujos de información. Data-driven: Exige indicadores de transferencia (ej: % lecciones aplicadas).',
+        'impulsores_valor' => 'Plataformas LMS (ej: Moodle). Bancos de conocimiento searchable. Learning analytics.',
+        'teoria_efectividad' => 'Las organizaciones que codifican conocimiento superan a sus pares (Nonaka & Takeuchi, 1995).',
+        'estrategias_calidad' => 'Wikis actualizados por incentivos. Podcasts internos con lecciones de proyectos. Mapas de competencias digitales.',
+        'conclusion' => 'Típico de multinacionales y sector aeronáutico. Riesgo: burocratizar el aprendizaje.'
+    ]
+];
+
+//Función para mostrar resultados
 function mostrarResultados($resultados) {
+    global $culturas_info, $aprendizajes_info;
+
     // Calcular totales para porcentajes
     $total_cultura_actual = array_sum($resultados['detalles_culturas']['actual']);
     $total_cultura_deseada = array_sum($resultados['detalles_culturas']['deseada']);
@@ -197,31 +295,50 @@ function mostrarResultados($resultados) {
     $total_cultura_deseada = $total_cultura_deseada ?: 1;
     $total_aprendizaje = $total_aprendizaje ?: 1;
 
-    // Generar datos dinámicos para los gráficos
-    $data_cultura = json_encode(array_map(function($cultura, $valor_actual) use ($resultados, $total_cultura_actual, $total_cultura_deseada) {
-        return [
-            'cultura' => $cultura,
-            'actual' => round(($valor_actual / $total_cultura_actual) * 100, 2),
-            'deseada' => round(($resultados['detalles_culturas']['deseada'][$cultura] / $total_cultura_deseada) * 100, 2)
-        ];
-    }, array_keys($resultados['detalles_culturas']['actual']), $resultados['detalles_culturas']['actual']));
+    // Preparar datos para los gráficos
+    $data_cultura = [];
+    $culturas = ['Clan', 'Adhocracia', 'Mercado', 'Jerarquía']; // Definir el orden de las culturas
+    $max_cultura_value = 0;  // Inicializar el valor máximo para la cultura
+    foreach ($culturas as $cultura) {
+        $actual = round(($resultados['detalles_culturas']['actual'][$cultura] / $total_cultura_actual) * 100, 2);
+        $deseada = round(($resultados['detalles_culturas']['deseada'][$cultura] / $total_cultura_deseada) * 100, 2);
+        $data_cultura['actual'][] = $actual;
+        $data_cultura['deseada'][] = $deseada;
+        $max_cultura_value = max($max_cultura_value, $actual, $deseada); // Actualizar el valor máximo
+    }
 
-    $data_aprendizaje = json_encode(array_map(function($dimension, $puntuacion) use ($total_aprendizaje) {
-        return [
-            'dimension' => $dimension,
-            'puntuacion' => round(($puntuacion / $total_aprendizaje) * 100, 2)
-        ];
-    }, array_keys($resultados['detalles_aprendizaje']), $resultados['detalles_aprendizaje']));
+    $data_aprendizaje = [];
+    $aprendizaje_labels = []; // Para almacenar las etiquetas de aprendizaje
+    $max_aprendizaje_value = 0; // Inicializar el valor máximo para el aprendizaje
+    if (isset($resultados['detalles_aprendizaje']) && is_array($resultados['detalles_aprendizaje'])) {
+        foreach ($resultados['detalles_aprendizaje'] as $dimension => $puntuacion) {
+            $puntuacion_redondeada = round(($puntuacion / $total_aprendizaje) * 100, 2);
+            $data_aprendizaje[] = $puntuacion_redondeada;
+            $aprendizaje_labels[] = $dimension; // Guardar el nombre de la dimensión
+            $max_aprendizaje_value = max($max_aprendizaje_value, $puntuacion_redondeada); // Actualizar el valor máximo
+        }
+    }
 
+    // Redondear hacia arriba al siguiente múltiplo de 10
+    $max_cultura = ceil($max_cultura_value / 10) * 10;
+    $max_aprendizaje = ceil($max_aprendizaje_value / 10) * 10;
+
+    $json_cultura = json_encode($data_cultura);
+    $json_aprendizaje = json_encode($data_aprendizaje);
+    $json_aprendizaje_labels = json_encode($aprendizaje_labels);
+
+    // Obtener la información de la cultura predominante actual y deseada
+    $cultura_actual = $resultados['cultura_actual'];
+    $cultura_deseada = $resultados['cultura_deseada'];
+    $aprendizaje_principal = $resultados['aprendizaje_principal'];
+
+    // Comienza el HTML
     echo "<!DOCTYPE html>
     <html lang='es'>
     <head>
         <meta charset='UTF-8'>
         <title>Resultados del Diagnóstico</title>
-        <script src='https://cdn.amcharts.com/lib/5/index.js'></script>
-        <script src='https://cdn.amcharts.com/lib/5/radar.js'></script>
-        <script src='https://cdn.amcharts.com/lib/5/themes/Animated.js'></script>
-        <script src='https://cdn.amcharts.com/lib/5/xy.js'></script>
+        <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
         <style>
             body {
                 font-family: Arial, sans-serif;
@@ -259,7 +376,7 @@ function mostrarResultados($resultados) {
             th {
                 background-color: #f2f2f2;
             }
-            #chartdiv, #chartdivAprendizaje {
+            #chartCultura, #chartAprendizaje {
                 width: 100%;
                 height: 400px;
                 margin-top: 20px;
@@ -272,8 +389,70 @@ function mostrarResultados($resultados) {
             
             <div class='resultado'>
                 <h2>Cultura Organizacional</h2>
-                <p><strong>Cultura Actual Predominante:</strong> {$resultados['cultura_actual']}</p>
-                <p><strong>Cultura Deseada Predominante:</strong> {$resultados['cultura_deseada']}</p>
+                <p><strong>Cultura Actual Predominante:</strong> {$cultura_actual}</p>
+                 <p><strong>Tipo:</strong> ";
+        if (isset($culturas_info[$cultura_actual]['tipo'])) {
+            echo htmlspecialchars($culturas_info[$cultura_actual]['tipo']);
+        }
+        echo "</p>
+                <p><strong>Diagnóstico:</strong> ";
+                 if (isset($culturas_info[$cultura_actual]['diagnostico'])) {
+            echo htmlspecialchars($culturas_info[$cultura_actual]['diagnostico']);
+        }
+         echo "</p>
+                <p><strong>Líder:</strong> ";
+                  if (isset($culturas_info[$cultura_actual]['lider'])) {
+            echo htmlspecialchars($culturas_info[$cultura_actual]['lider']);
+        }
+        echo "</p>
+                <p><strong>Impulsores de valor:</strong> ";
+                 if (isset($culturas_info[$cultura_actual]['impulsores_valor'])) {
+            echo htmlspecialchars($culturas_info[$cultura_actual]['impulsores_valor']);
+        }
+        echo "</p>
+                <p><strong>Teoría de la efectividad:</strong> ";
+        if (isset($culturas_info[$cultura_actual]['teoria_efectividad'])) {
+            echo htmlspecialchars($culturas_info[$cultura_actual]['teoria_efectividad']);
+        }
+         echo "</p>
+                <p><strong>Estrategias de calidad:</strong> ";
+         if (isset($culturas_info[$cultura_actual]['estrategias_calidad'])) {
+            echo htmlspecialchars($culturas_info[$cultura_actual]['estrategias_calidad']);
+        }
+          echo "</p>
+            
+
+                <p><strong>Cultura Deseada Predominante:</strong> {$cultura_deseada}</p>
+                 <p><strong>Tipo:</strong> ";
+                   if (isset($culturas_info[$cultura_deseada]['tipo'])) {
+            echo htmlspecialchars($culturas_info[$cultura_deseada]['tipo']);
+        }
+         echo "</p>
+                <p><strong>Diagnóstico:</strong> ";
+                  if (isset($culturas_info[$cultura_deseada]['diagnostico'])) {
+            echo htmlspecialchars($culturas_info[$cultura_deseada]['diagnostico']);
+        }
+         echo "</p>
+                <p><strong>Líder:</strong> ";
+                  if (isset($culturas_info[$cultura_deseada]['lider'])) {
+            echo htmlspecialchars($culturas_info[$cultura_deseada]['lider']);
+        }
+         echo "</p>
+                <p><strong>Impulsores de valor:</strong>";
+                  if (isset($culturas_info[$cultura_deseada]['impulsores_valor'])) {
+            echo htmlspecialchars($culturas_info[$cultura_deseada]['impulsores_valor']);
+        }
+          echo "</p>
+                <p><strong>Teoría de la efectividad:</strong> ";
+           if (isset($culturas_info[$cultura_deseada]['teoria_efectividad'])) {
+            echo htmlspecialchars($culturas_info[$cultura_deseada]['teoria_efectividad']);
+        }
+         echo "</p>
+                <p><strong>Estrategias de calidad:</strong> ";
+          if (isset($culturas_info[$cultura_deseada]['estrategias_calidad'])) {
+            echo htmlspecialchars($culturas_info[$cultura_deseada]['estrategias_calidad']);
+        }
+          echo "</p>
                 
                 <h3>Detalle de Culturas</h3>
                 <table>
@@ -283,23 +462,55 @@ function mostrarResultados($resultados) {
                         <th>Deseada (%)</th>
                     </tr>";
 
-    foreach ($resultados['detalles_culturas']['actual'] as $cultura => $valor) {
-        $valor_actual = round(($valor / $total_cultura_actual) * 100, 2);
+    $culturas = ['Clan', 'Adhocracia', 'Mercado', 'Jerarquía']; // Definir el orden de las culturas
+    foreach ($culturas as $cultura) {
+        $valor_actual = round(($resultados['detalles_culturas']['actual'][$cultura] / $total_cultura_actual) * 100, 2);
         $valor_deseado = round(($resultados['detalles_culturas']['deseada'][$cultura] / $total_cultura_deseada) * 100, 2);
         echo "<tr>
-                <td>$cultura</td>
-                <td>$valor_actual%</td>
-                <td>$valor_deseado%</td>
-              </tr>";
+                    <td>$cultura</td>
+                    <td>$valor_actual%</td>
+                    <td>$valor_deseado%</td>
+                </tr>";
     }
 
     echo "</table>
-            <div id='chartdiv'></div>
+                <canvas id='chartCultura'></canvas>
             </div>
 
             <div class='resultado'>
                 <h2>Cultura de Aprendizaje</h2>
-                <p><strong>Dimensión Principal:</strong> {$resultados['aprendizaje_principal']}</p>
+                <p><strong>Dimensión Principal:</strong> {$aprendizaje_principal}</p>
+                 <p><strong>Tipo:</strong> ";
+                
+        if (isset($aprendizajes_info[$aprendizaje_principal]['tipo'])) {
+            echo htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['tipo']);
+        }
+          echo "</p>
+                <p><strong>Diagnóstico:</strong> ";
+                if (isset($aprendizajes_info[$aprendizaje_principal]['diagnostico'])) {
+                    echo htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['diagnostico']);
+                }
+                echo "</p>
+                <p><strong>Líder:</strong> ";
+                 if (isset($aprendizajes_info[$aprendizaje_principal]['lider'])) {
+                    echo htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['lider']);
+                }
+                echo "</p>
+                <p><strong>Impulsores de valor:</strong> ";
+                 if (isset($aprendizajes_info[$aprendizaje_principal]['impulsores_valor'])) {
+                    echo htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['impulsores_valor']);
+                }
+                echo "</p>
+                <p><strong>Teoría de la efectividad:</strong> ";
+                if (isset($aprendizajes_info[$aprendizaje_principal]['teoria_efectividad'])) {
+                    echo htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['teoria_efectividad']);
+                }
+               echo "</p>
+                <p><strong>Estrategias de calidad:</strong> ";
+               if (isset($aprendizajes_info[$aprendizaje_principal]['estrategias_calidad'])) {
+                    echo htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['estrategias_calidad']);
+                }
+               echo "</p>
 
                 <h3>Detalle de Dimensiones</h3>
                 <table>
@@ -308,112 +519,132 @@ function mostrarResultados($resultados) {
                         <th>Puntuación (%)</th>
                     </tr>";
 
+    $i = 0;
     foreach ($resultados['detalles_aprendizaje'] as $dimension => $puntuacion) {
         $puntuacion_porcentaje = round(($puntuacion / $total_aprendizaje) * 100, 2);
         echo "<tr>
-                <td>$dimension</td>
-                <td>$puntuacion_porcentaje%</td>
-              </tr>";
+                    <td>$dimension</td>
+                    <td>$puntuacion_porcentaje%</td>
+                </tr>";
+        $i++;
     }
 
     echo "</table>
-            <div id='chartdivAprendizaje'></div>
+                <canvas id='chartAprendizaje'></canvas>
             </div>
 
             <div class='resultado'>
-                <h2>Recomendaciones</h2>
-                <p>Basado en tus resultados, te recomendamos trabajar en...</p>
+                <h2>Conclusión</h2>
+                <p>";
+                 if (isset($aprendizajes_info[$aprendizaje_principal]['conclusion'])) {
+                    echo htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['conclusion']);
+                }
+               echo "</p>
             </div>
 
         </div>
 
-        <!-- Scripts para amCharts -->
         <script>
-            am5.ready(function() {
-                let root = am5.Root.new('chartdiv');
-                root.setThemes([am5themes_Animated.new(root)]);
+            var dataCultura = ". $json_cultura . ";
+            var dataAprendizaje = ". $json_aprendizaje . ";
+            var aprendizajeLabels = ". $json_aprendizaje_labels . "; // Etiquetas para el gráfico de aprendizaje
+            
+            // Extraer los valores de data_cultura para 'actual' y 'deseada'
+            var actualData = dataCultura.actual;
+            var deseadaData = dataCultura.deseada;
 
-                let chart = root.container.children.push(am5radar.RadarChart.new(root, {
-                    innerRadius: am5.percent(20),
-                    panX: false,
-                    panY: false,
-                    wheelX: 'none',
-                    wheelY: 'none'
-                }));
+            // Nombres de las culturas para el eje
+            var culturaLabels = ['Clan', 'Adhocracia', 'Mercado', 'Jerarquía'];
 
-                let xAxis = chart.xAxes.push(am5xy.CategoryAxis.new(root, {
-                    renderer: am5radar.AxisRendererCircular.new(root, {}),
-                    categoryField: 'cultura'
-                }));
+            var maxCultura = ".$max_cultura."; // Valor máximo dinámico para el eje del gráfico de cultura
+            var maxAprendizaje = ".$max_aprendizaje.";   // Valor máximo dinámico para el eje del gráfico de aprendizaje
 
-                let yAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
-                    renderer: am5radar.AxisRendererRadial.new(root, {})
-                }));
+            // Configuración del gráfico de cultura
+            const ctxCultura = document.getElementById('chartCultura').getContext('2d');
+            const chartCultura = new Chart(ctxCultura, {
+                type: 'radar',
+                data: {
+                    labels: culturaLabels,
+                    datasets: [{
+                        label: 'Actual',
+                        data: actualData,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        pointRadius: 3, // Ajustar el radio de los puntos
+                        pointBorderWidth: 2, // Ajustar el ancho del borde de los puntos
+                        pointStyle: 'circle' // Mostrar los puntos como círculos
+                    }, {
+                        label: 'Deseada',
+                        data: deseadaData,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1,
+                        pointRadius: 3, // Ajustar el radio de los puntos
+                        pointBorderWidth: 2, // Ajustar el ancho del borde de los puntos
+                        pointStyle: 'circle' // Mostrar los puntos como círculos
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: maxCultura, // Usar el valor máximo dinámico
+                            ticks: {
+                                display: true,
+                                stepSize: 20, // Ajustar el tamaño del paso de los ticks
+                                backdropColor: 'transparent' // Hacer el fondo de los ticks transparente
+                            }
+                        }
+                    },
+                    elements: {
+                        line: {
+                            tension: 0.4 // Ajustar la tensión de la línea para redondear las esquinas
+                        }
+                    }
+                }
+            });
 
-                let seriesActual = chart.series.push(am5radar.RadarColumnSeries.new(root, {
-                    name: 'Actual',
-                    xAxis: xAxis,
-                    yAxis: yAxis,
-                    valueYField: 'actual',
-                    categoryXField: 'cultura'
-                }));
-
-                let seriesDeseada = chart.series.push(am5radar.RadarColumnSeries.new(root, {
-                    name: 'Deseada',
-                    xAxis: xAxis,
-                    yAxis: yAxis,
-                    valueYField: 'deseada',
-                    categoryXField: 'cultura'
-                }));
-
-                let dataCultura = {$data_cultura};
-                
-                xAxis.data.setAll(dataCultura);
-                seriesActual.data.setAll(dataCultura);
-                seriesDeseada.data.setAll(dataCultura);
-                
-                // Aprendizaje Chart
-                let root2 = am5.Root.new('chartdivAprendizaje');
-                root.setThemes([amthemes_Animated.New(Root)]
-
-
-                let chart2 = root2.container.children.push(am5radar.RadarChart.new(root2, {
-                    panX: false,
-                    panY: false,
-                    wheelX: 'none',
-                    wheelY: 'none'
-                }));
-
-                let xRenderer2 = am5radar.AxisRendererCircular.new(root2, {});
-                let xAxis2 = chart2.xAxes.push(am5xy.CategoryAxis.new(root2, {
-                    renderer: xRenderer2,
-                    categoryField: 'dimension'
-                }));
-
-                let yAxis2 = chart2.yAxes.push(am5xy.ValueAxis.new(root2, {
-                    renderer: am5radar.AxisRendererRadial.new(root2, {})
-                }));
-
-                let seriesAprendizaje = chart2.series.push(am5radar.RadarLineSeries.new(root2, {
-                    name: 'Aprendizaje',
-                    xAxis: xAxis2,
-                    yAxis: yAxis2,
-                    valueYField: 'puntuacion',
-                    categoryXField: 'dimension'
-                }));
-
-                // Datos dinámicos para el gráfico de aprendizaje
-                let dataAprendizaje = {$data_aprendizaje};
-
-                xAxis2.data.setAll(dataAprendizaje);
-                seriesAprendizaje.data.setAll(dataAprendizaje);
+            // Configuración del gráfico de aprendizaje
+            const ctxAprendizaje = document.getElementById('chartAprendizaje').getContext('2d');
+            const chartAprendizaje = new Chart(ctxAprendizaje, {
+                type: 'radar',
+                data: {
+                    labels: aprendizajeLabels, // Usar las etiquetas correctas
+                    datasets: [{
+                        label: 'Puntuación',
+                        data: dataAprendizaje,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1,
+                        pointRadius: 3, // Ajustar el radio de los puntos
+                        pointBorderWidth: 2, // Ajustar el ancho del borde de los puntos
+                        pointStyle: 'circle' // Mostrar los puntos como círculos
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: maxAprendizaje, // Usar el valor máximo dinámico
+                            ticks: {
+                                display: true,
+                                stepSize: 20, // Ajustar el tamaño del paso de los ticks
+                                backdropColor: 'transparent' // Hacer el fondo de los ticks transparente
+                            }
+                        }
+                    },
+                    elements: {
+                        line: {
+                            tension: 4 // Ajustar la tensión de la línea para redondear las esquinas
+                        }
+                    }
+                }
             });
         </script>
     </body>
     </html>";
 }
-
-
 
 
 // Función para mostrar el formulario
