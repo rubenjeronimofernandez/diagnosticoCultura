@@ -74,8 +74,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $respuesta_id = $stmt->insert_id;
     $stmt->close();
-
-    echo "Respuestas guardadas correctamente con ID: " . $respuesta_id;
     
     // Calcular y guardar resultados
     $resultados = calcularResultados($conn, $participante_id);
@@ -189,80 +187,234 @@ function calcularResultados($conn, $participante_id) {
 
 // Función para mostrar resultados
 function mostrarResultados($resultados) {
+    // Calcular totales para porcentajes
+    $total_cultura_actual = array_sum($resultados['detalles_culturas']['actual']);
+    $total_cultura_deseada = array_sum($resultados['detalles_culturas']['deseada']);
+    $total_aprendizaje = array_sum($resultados['detalles_aprendizaje']);
+
+    // Evitar divisiones por cero
+    $total_cultura_actual = $total_cultura_actual ?: 1;
+    $total_cultura_deseada = $total_cultura_deseada ?: 1;
+    $total_aprendizaje = $total_aprendizaje ?: 1;
+
+    // Generar datos dinámicos para los gráficos
+    $data_cultura = json_encode(array_map(function($cultura, $valor_actual) use ($resultados, $total_cultura_actual, $total_cultura_deseada) {
+        return [
+            'cultura' => $cultura,
+            'actual' => round(($valor_actual / $total_cultura_actual) * 100, 2),
+            'deseada' => round(($resultados['detalles_culturas']['deseada'][$cultura] / $total_cultura_deseada) * 100, 2)
+        ];
+    }, array_keys($resultados['detalles_culturas']['actual']), $resultados['detalles_culturas']['actual']));
+
+    $data_aprendizaje = json_encode(array_map(function($dimension, $puntuacion) use ($total_aprendizaje) {
+        return [
+            'dimension' => $dimension,
+            'puntuacion' => round(($puntuacion / $total_aprendizaje) * 100, 2)
+        ];
+    }, array_keys($resultados['detalles_aprendizaje']), $resultados['detalles_aprendizaje']));
+
     echo "<!DOCTYPE html>
     <html lang='es'>
     <head>
         <meta charset='UTF-8'>
         <title>Resultados del Diagnóstico</title>
+        <script src='https://cdn.amcharts.com/lib/5/index.js'></script>
+        <script src='https://cdn.amcharts.com/lib/5/radar.js'></script>
+        <script src='https://cdn.amcharts.com/lib/5/themes/Animated.js'></script>
+        <script src='https://cdn.amcharts.com/lib/5/xy.js'></script>
         <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
-            .resultado { background-color: #f5f5f5; padding: 20px; margin-bottom: 20px; border-radius: 5px; }
-            .grafico { height: 20px; background-color: #e0e0e0; margin: 10px 0; border-radius: 3px; }
-            .barra { height: 100%; background-color: #4CAF50; border-radius: 3px; }
-            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-            th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
-            th { background-color: #f2f2f2; }
+            body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+                background-image: url('https://static.vecteezy.com/system/resources/previews/006/852/864/non_2x/abstract-colorful-different-form-background-free-vector.jpg');
+                background-size: cover;
+                background-position: center;
+                background-attachment: fixed;
+                background-repeat: no-repeat;
+            }
+            .contenido {
+                background: rgba(255, 255, 255, 0.9);
+                padding: 20px;
+                border-radius: 10px;
+            }
+            .resultado {
+                background-color: #f5f5f5;
+                padding: 20px;
+                margin-bottom: 20px;
+                border-radius: 5px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+            }
+            th, td {
+                padding: 10px;
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+            }
+            th {
+                background-color: #f2f2f2;
+            }
+            #chartdiv, #chartdivAprendizaje {
+                width: 100%;
+                height: 400px;
+                margin-top: 20px;
+            }
         </style>
     </head>
     <body>
-        <h1>Resultados de tu Diagnóstico Organizacional</h1>
-        
-        <div class='resultado'>
-            <h2>Cultura Organizacional</h2>
-            <p><strong>Cultura Actual Predominante:</strong> {$resultados['cultura_actual']}</p>
-            <p><strong>Cultura Deseada Predominante:</strong> {$resultados['cultura_deseada']}</p>
+        <div class='contenido'>
+            <h1>Resultados de tu Diagnóstico Organizacional</h1>
             
-            <h3>Detalle de Culturas</h3>
-            <table>
-                <tr>
-                    <th>Tipo Cultural</th>
-                    <th>Actual</th>
-                    <th>Deseada</th>
-                </tr>";
-    
+            <div class='resultado'>
+                <h2>Cultura Organizacional</h2>
+                <p><strong>Cultura Actual Predominante:</strong> {$resultados['cultura_actual']}</p>
+                <p><strong>Cultura Deseada Predominante:</strong> {$resultados['cultura_deseada']}</p>
+                
+                <h3>Detalle de Culturas</h3>
+                <table>
+                    <tr>
+                        <th>Tipo Cultural</th>
+                        <th>Actual (%)</th>
+                        <th>Deseada (%)</th>
+                    </tr>";
+
     foreach ($resultados['detalles_culturas']['actual'] as $cultura => $valor) {
-        $valor_deseado = $resultados['detalles_culturas']['deseada'][$cultura];
+        $valor_actual = round(($valor / $total_cultura_actual) * 100, 2);
+        $valor_deseado = round(($resultados['detalles_culturas']['deseada'][$cultura] / $total_cultura_deseada) * 100, 2);
         echo "<tr>
                 <td>$cultura</td>
-                <td>$valor</td>
-                <td>$valor_deseado</td>
+                <td>$valor_actual%</td>
+                <td>$valor_deseado%</td>
               </tr>";
     }
-    
+
     echo "</table>
-        </div>
-        
-        <div class='resultado'>
-            <h2>Cultura de Aprendizaje</h2>
-            <p><strong>Dimensión Principal:</strong> {$resultados['aprendizaje_principal']}</p>
-            
-            <h3>Detalle de Dimensiones</h3>
-            <table>
-                <tr>
-                    <th>Dimensión</th>
-                    <th>Puntuación</th>
-                </tr>";
-    
+            <div id='chartdiv'></div>
+            </div>
+
+            <div class='resultado'>
+                <h2>Cultura de Aprendizaje</h2>
+                <p><strong>Dimensión Principal:</strong> {$resultados['aprendizaje_principal']}</p>
+
+                <h3>Detalle de Dimensiones</h3>
+                <table>
+                    <tr>
+                        <th>Dimensión</th>
+                        <th>Puntuación (%)</th>
+                    </tr>";
+
     foreach ($resultados['detalles_aprendizaje'] as $dimension => $puntuacion) {
+        $puntuacion_porcentaje = round(($puntuacion / $total_aprendizaje) * 100, 2);
         echo "<tr>
                 <td>$dimension</td>
-                <td>$puntuacion</td>
+                <td>$puntuacion_porcentaje%</td>
               </tr>";
     }
-    
+
     echo "</table>
+            <div id='chartdivAprendizaje'></div>
+            </div>
+
+            <div class='resultado'>
+                <h2>Recomendaciones</h2>
+                <p>Basado en tus resultados, te recomendamos trabajar en...</p>
+            </div>
+
         </div>
-        
-        <div class='resultado'>
-            <h2>Recomendaciones</h2>";
-    
-    // Aquí puedes añadir recomendaciones específicas basadas en los resultados
-    echo "<p>Basado en tus resultados, te recomendamos trabajar en...</p>";
-    
-    echo "</div>
+
+        <!-- Scripts para amCharts -->
+        <script>
+            am5.ready(function() {
+                let root = am5.Root.new('chartdiv');
+                root.setThemes([am5themes_Animated.new(root)]);
+
+                let chart = root.container.children.push(am5radar.RadarChart.new(root, {
+                    innerRadius: am5.percent(20),
+                    panX: false,
+                    panY: false,
+                    wheelX: 'none',
+                    wheelY: 'none'
+                }));
+
+                let xAxis = chart.xAxes.push(am5xy.CategoryAxis.new(root, {
+                    renderer: am5radar.AxisRendererCircular.new(root, {}),
+                    categoryField: 'cultura'
+                }));
+
+                let yAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
+                    renderer: am5radar.AxisRendererRadial.new(root, {})
+                }));
+
+                let seriesActual = chart.series.push(am5radar.RadarColumnSeries.new(root, {
+                    name: 'Actual',
+                    xAxis: xAxis,
+                    yAxis: yAxis,
+                    valueYField: 'actual',
+                    categoryXField: 'cultura'
+                }));
+
+                let seriesDeseada = chart.series.push(am5radar.RadarColumnSeries.new(root, {
+                    name: 'Deseada',
+                    xAxis: xAxis,
+                    yAxis: yAxis,
+                    valueYField: 'deseada',
+                    categoryXField: 'cultura'
+                }));
+
+                let dataCultura = {$data_cultura};
+                
+                xAxis.data.setAll(dataCultura);
+                seriesActual.data.setAll(dataCultura);
+                seriesDeseada.data.setAll(dataCultura);
+                
+                // Aprendizaje Chart
+                let root2 = am5.Root.new('chartdivAprendizaje');
+                root.setThemes([amthemes_Animated.New(Root)]
+
+
+                let chart2 = root2.container.children.push(am5radar.RadarChart.new(root2, {
+                    panX: false,
+                    panY: false,
+                    wheelX: 'none',
+                    wheelY: 'none'
+                }));
+
+                let xRenderer2 = am5radar.AxisRendererCircular.new(root2, {});
+                let xAxis2 = chart2.xAxes.push(am5xy.CategoryAxis.new(root2, {
+                    renderer: xRenderer2,
+                    categoryField: 'dimension'
+                }));
+
+                let yAxis2 = chart2.yAxes.push(am5xy.ValueAxis.new(root2, {
+                    renderer: am5radar.AxisRendererRadial.new(root2, {})
+                }));
+
+                let seriesAprendizaje = chart2.series.push(am5radar.RadarLineSeries.new(root2, {
+                    name: 'Aprendizaje',
+                    xAxis: xAxis2,
+                    yAxis: yAxis2,
+                    valueYField: 'puntuacion',
+                    categoryXField: 'dimension'
+                }));
+
+                // Datos dinámicos para el gráfico de aprendizaje
+                let dataAprendizaje = {$data_aprendizaje};
+
+                xAxis2.data.setAll(dataAprendizaje);
+                seriesAprendizaje.data.setAll(dataAprendizaje);
+            });
+        </script>
     </body>
     </html>";
 }
+
+
+
 
 // Función para mostrar el formulario
 function mostrarFormulario() {
@@ -272,14 +424,44 @@ function mostrarFormulario() {
         <meta charset='UTF-8'>
         <title>Diagnóstico Organizacional</title>
         <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
-            .pregunta { margin-bottom: 30px; padding: 15px; background-color: #f9f9f9; border-radius: 5px; }
-            .opciones { margin-left: 20px; }
-            .grupo { margin-bottom: 15px; }
-            h2 { color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+            body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+                background-image: url('https://static.vecteezy.com/system/resources/previews/006/852/864/non_2x/abstract-colorful-different-form-background-free-vector.jpg');
+                background-size: cover;
+                background-position: center;
+                background-attachment: fixed;
+                background-repeat: no-repeat;
+            }
+            .pregunta {
+                margin-bottom: 30px;
+                padding: 15px;
+                background-color: #f9f9f9;
+                border-radius: 5px;
+            }
+            .opciones {
+                margin-left: 20px;
+            }
+            .grupo {
+                margin-bottom: 15px;
+            }
+            h2 {
+                color: #2c3e50;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 10px;
+            }
+            form {
+                background: rgba(255, 255, 255, 0.9); /* Fondo blanco semitransparente */
+                padding: 20px;
+                border-radius: 10px;
+            }
         </style>
     </head>
     <body>
+
         <h1>Diagnóstico de Cultura Organizacional y Aprendizaje</h1>
         <form method='post' action='diagnosticoCultura.php'>
             
