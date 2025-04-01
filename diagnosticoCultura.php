@@ -185,7 +185,9 @@ function calcularResultados($conn, $participante_id) {
     ];
 }
 
-$culturas_info = [
+//Función para mostrar resultados
+function mostrarResultados($resultados) {
+    $culturas_info = [
     'Clan' => [
         'tipo' => 'Organizativa',
         'diagnostico' => 'Entorno colaborativo donde prima la confianza, lealtad y sentido de familia. Los líderes actúan como mentores y se valora el desarrollo humano. El éxito se mide por el bienestar de las personas y la satisfacción del cliente.',
@@ -280,11 +282,6 @@ $aprendizajes_info = [
         'conclusion' => 'Típico de multinacionales y sector aeronáutico. Riesgo: burocratizar el aprendizaje.'
     ]
 ];
-
-//Función para mostrar resultados
-function mostrarResultados($resultados) {
-    global $culturas_info, $aprendizajes_info;
-
     // Calcular totales para porcentajes
     $total_cultura_actual = array_sum($resultados['detalles_culturas']['actual']);
     $total_cultura_deseada = array_sum($resultados['detalles_culturas']['deseada']);
@@ -334,213 +331,239 @@ function mostrarResultados($resultados) {
 
     // Comienza el HTML
     echo "<!DOCTYPE html>
-    <html lang='es'>
-    <head>
-        <meta charset='UTF-8'>
-        <title>Resultados del Diagnóstico</title>
-        <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 20px;
-                background-image: url('https://static.vecteezy.com/system/resources/previews/006/852/864/non_2x/abstract-colorful-different-form-background-free-vector.jpg');
-                background-size: cover;
-                background-position: center;
-                background-attachment: fixed;
-                background-repeat: no-repeat;
-            }
-            .contenido {
-                background: rgba(255, 255, 255, 0.9);
-                padding: 20px;
-                border-radius: 10px;
-            }
-            .resultado {
-                background-color: #f5f5f5;
-                padding: 20px;
-                margin-bottom: 20px;
-                border-radius: 5px;
-            }
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 20px 0;
-            }
-            th, td {
-                padding: 10px;
-                text-align: left;
-                border-bottom: 1px solid #ddd;
-            }
-            th {
-                background-color: #f2f2f2;
-            }
-            #chartCultura, #chartAprendizaje {
-                width: 100%;
-                height: 400px;
-                margin-top: 20px;
-            }
-        </style>
-    </head>
-    <body>
-        <div class='contenido'>
-            <h1>Resultados de tu Diagnóstico Organizacional</h1>
+<html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <title>Resultados del Diagnóstico</title>
+    <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;  /* Aumentado de 800px a 1200px */
+            margin: 0 auto;
+            padding: 20px;
+            background-image: url('https://static.vecteezy.com/system/resources/previews/006/852/864/non_2x/abstract-colorful-different-form-background-free-vector.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+        .contenido {
+            background: rgba(255, 255, 255, 0.95); /* Más opaco para mejor legibilidad */
+            padding: 30px;  /* Más padding */
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .resultado {
+            background-color: #f8f9fa;  /* Color más claro */
+            padding: 25px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            border-left: 5px solid #4e73df;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;  /* Dos columnas */
+            gap: 30px;  /* Espacio entre columnas */
+            margin-bottom: 30px;
+        }
+        .cultura-box {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95em;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: 600;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+            font-size: 1.6em;
+        }
+        h3 {
+            color: #3a5169;
+            margin-top: 25px;
+        }
+        strong {
+            color: #4e73df;
+        }
+        #chartCultura{
+            width: 100%;
+            height: 400px;
+            margin-top: 30px;
+        }
+        #chartAprendizaje{
+            width: 20%;
+            height: 400px;
+            margin-top: 30px;
+        }
+        .conclusion-box {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid #1cc88a;
+        }
+        .contenedor-grafico-aprendizajes{
+            width: 50%;
+            margin:auto;
+        }
+    </style>
+</head>
+<body>
+    <div class='contenido'>
+        <h1>Resultados de tu Diagnóstico Organizacional</h1>
+        
+        <div class='resultado'>
+            <h2>Cultura Organizacional</h2>
             
-            <div class='resultado'>
-                <h2>Cultura Organizacional</h2>
-                <p><strong>Cultura Actual Predominante:</strong> {$cultura_actual}</p>
-                 <p><strong>Tipo:</strong> ";
-        if (isset($culturas_info[$cultura_actual]['tipo'])) {
-            echo htmlspecialchars($culturas_info[$cultura_actual]['tipo']);
-        }
-        echo "</p>
-                <p><strong>Diagnóstico:</strong> ";
-                 if (isset($culturas_info[$cultura_actual]['diagnostico'])) {
-            echo htmlspecialchars($culturas_info[$cultura_actual]['diagnostico']);
-        }
-         echo "</p>
-                <p><strong>Líder:</strong> ";
-                  if (isset($culturas_info[$cultura_actual]['lider'])) {
-            echo htmlspecialchars($culturas_info[$cultura_actual]['lider']);
-        }
-        echo "</p>
-                <p><strong>Impulsores de valor:</strong> ";
-                 if (isset($culturas_info[$cultura_actual]['impulsores_valor'])) {
-            echo htmlspecialchars($culturas_info[$cultura_actual]['impulsores_valor']);
-        }
-        echo "</p>
-                <p><strong>Teoría de la efectividad:</strong> ";
-        if (isset($culturas_info[$cultura_actual]['teoria_efectividad'])) {
-            echo htmlspecialchars($culturas_info[$cultura_actual]['teoria_efectividad']);
-        }
-         echo "</p>
-                <p><strong>Estrategias de calidad:</strong> ";
-         if (isset($culturas_info[$cultura_actual]['estrategias_calidad'])) {
-            echo htmlspecialchars($culturas_info[$cultura_actual]['estrategias_calidad']);
-        }
-          echo "</p>
-            
-
-                <p><strong>Cultura Deseada Predominante:</strong> {$cultura_deseada}</p>
-                 <p><strong>Tipo:</strong> ";
-                   if (isset($culturas_info[$cultura_deseada]['tipo'])) {
-            echo htmlspecialchars($culturas_info[$cultura_deseada]['tipo']);
-        }
-         echo "</p>
-                <p><strong>Diagnóstico:</strong> ";
-                  if (isset($culturas_info[$cultura_deseada]['diagnostico'])) {
-            echo htmlspecialchars($culturas_info[$cultura_deseada]['diagnostico']);
-        }
-         echo "</p>
-                <p><strong>Líder:</strong> ";
-                  if (isset($culturas_info[$cultura_deseada]['lider'])) {
-            echo htmlspecialchars($culturas_info[$cultura_deseada]['lider']);
-        }
-         echo "</p>
-                <p><strong>Impulsores de valor:</strong>";
-                  if (isset($culturas_info[$cultura_deseada]['impulsores_valor'])) {
-            echo htmlspecialchars($culturas_info[$cultura_deseada]['impulsores_valor']);
-        }
-          echo "</p>
-                <p><strong>Teoría de la efectividad:</strong> ";
-           if (isset($culturas_info[$cultura_deseada]['teoria_efectividad'])) {
-            echo htmlspecialchars($culturas_info[$cultura_deseada]['teoria_efectividad']);
-        }
-         echo "</p>
-                <p><strong>Estrategias de calidad:</strong> ";
-          if (isset($culturas_info[$cultura_deseada]['estrategias_calidad'])) {
-            echo htmlspecialchars($culturas_info[$cultura_deseada]['estrategias_calidad']);
-        }
-          echo "</p>
+            <div class='grid-container'>
+                <!-- Cultura Actual -->
+                <div class='cultura-box'>
+                    <h3>Cultura Actual Predominante: {$cultura_actual}</h3>";
+                    
+                    if (isset($culturas_info[$cultura_actual]['diagnostico'])) {
+                        echo "<p><strong>Diagnóstico:</strong><br>".htmlspecialchars($culturas_info[$cultura_actual]['diagnostico'])."</p>";
+                    }
+                    if (isset($culturas_info[$cultura_actual]['lider'])) {
+                        echo "<p><strong>Líder:</strong><br>".htmlspecialchars($culturas_info[$cultura_actual]['lider'])."</p>";
+                    }
+                    if (isset($culturas_info[$cultura_actual]['impulsores_valor'])) {
+                        echo "<p><strong>Impulsores de valor:</strong><br>".htmlspecialchars($culturas_info[$cultura_actual]['impulsores_valor'])."</p>";
+                    }
+                    if (isset($culturas_info[$cultura_actual]['teoria_efectividad'])) {
+                        echo "<p><strong>Teoría de la efectividad:</strong><br>".htmlspecialchars($culturas_info[$cultura_actual]['teoria_efectividad'])."</p>";
+                    }
+                    if (isset($culturas_info[$cultura_actual]['estrategias_calidad'])) {
+                        echo "<p><strong>Estrategias de calidad:</strong><br>".htmlspecialchars($culturas_info[$cultura_actual]['estrategias_calidad'])."</p>";
+                    }
+                    
+                echo "</div>
                 
-                <h3>Detalle de Culturas</h3>
+                <!-- Cultura Deseada -->
+                <div class='cultura-box'>
+                    <h3>Cultura Deseada Predominante: {$cultura_deseada}</h3>";
+                    
+                    if (isset($culturas_info[$cultura_deseada]['diagnostico'])) {
+                        echo "<p><strong>Diagnóstico:</strong><br>".htmlspecialchars($culturas_info[$cultura_deseada]['diagnostico'])."</p>";
+                    }
+                    if (isset($culturas_info[$cultura_deseada]['lider'])) {
+                        echo "<p><strong>Líder:</strong><br>".htmlspecialchars($culturas_info[$cultura_deseada]['lider'])."</p>";
+                    }
+                    if (isset($culturas_info[$cultura_deseada]['impulsores_valor'])) {
+                        echo "<p><strong>Impulsores de valor:</strong><br>".htmlspecialchars($culturas_info[$cultura_deseada]['impulsores_valor'])."</p>";
+                    }
+                    if (isset($culturas_info[$cultura_deseada]['teoria_efectividad'])) {
+                        echo "<p><strong>Teoría de la efectividad:</strong><br>".htmlspecialchars($culturas_info[$cultura_deseada]['teoria_efectividad'])."</p>";
+                    }
+                    if (isset($culturas_info[$cultura_deseada]['estrategias_calidad'])) {
+                        echo "<p><strong>Estrategias de calidad:</strong><br>".htmlspecialchars($culturas_info[$cultura_deseada]['estrategias_calidad'])."</p>";
+                    }
+                    
+                echo "</div>
+            </div>
+            
+            <h3>Detalle de Culturas</h3>
+            <div class='grid-container'>
                 <table>
-                    <tr>
-                        <th>Tipo Cultural</th>
-                        <th>Actual (%)</th>
-                        <th>Deseada (%)</th>
-                    </tr>";
-
-    $culturas = ['Clan', 'Adhocracia', 'Mercado', 'Jerarquía']; // Definir el orden de las culturas
-    foreach ($culturas as $cultura) {
-        $valor_actual = round(($resultados['detalles_culturas']['actual'][$cultura] / $total_cultura_actual) * 100, 2);
-        $valor_deseado = round(($resultados['detalles_culturas']['deseada'][$cultura] / $total_cultura_deseada) * 100, 2);
-        echo "<tr>
-                    <td>$cultura</td>
-                    <td>$valor_actual%</td>
-                    <td>$valor_deseado%</td>
+                <tr>
+                    <th>Tipo Cultural</th>
+                    <th>Actual (%)</th>
+                    <th>Deseada (%)</th>
                 </tr>";
-    }
 
-    echo "</table>
+                $culturas = ['Clan', 'Adhocracia', 'Mercado', 'Jerarquía'];
+                foreach ($culturas as $cultura) {
+                    $valor_actual = round(($resultados['detalles_culturas']['actual'][$cultura] / $total_cultura_actual) * 100, 2);
+                    $valor_deseado = round(($resultados['detalles_culturas']['deseada'][$cultura] / $total_cultura_deseada) * 100, 2);
+                    echo "<tr>
+                        <td>$cultura</td>
+                        <td>$valor_actual%</td>
+                        <td>$valor_deseado%</td>
+                    </tr>";
+                }
+
+            echo "</table>
+            <div>
                 <canvas id='chartCultura'></canvas>
             </div>
+            
+        </div>
+            </div>
 
-            <div class='resultado'>
-                <h2>Cultura de Aprendizaje</h2>
-                <p><strong>Dimensión Principal:</strong> {$aprendizaje_principal}</p>
-                 <p><strong>Tipo:</strong> ";
-                
-        if (isset($aprendizajes_info[$aprendizaje_principal]['tipo'])) {
-            echo htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['tipo']);
-        }
-          echo "</p>
-                <p><strong>Diagnóstico:</strong> ";
-                if (isset($aprendizajes_info[$aprendizaje_principal]['diagnostico'])) {
-                    echo htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['diagnostico']);
-                }
-                echo "</p>
-                <p><strong>Líder:</strong> ";
-                 if (isset($aprendizajes_info[$aprendizaje_principal]['lider'])) {
-                    echo htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['lider']);
-                }
-                echo "</p>
-                <p><strong>Impulsores de valor:</strong> ";
-                 if (isset($aprendizajes_info[$aprendizaje_principal]['impulsores_valor'])) {
-                    echo htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['impulsores_valor']);
-                }
-                echo "</p>
-                <p><strong>Teoría de la efectividad:</strong> ";
-                if (isset($aprendizajes_info[$aprendizaje_principal]['teoria_efectividad'])) {
-                    echo htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['teoria_efectividad']);
-                }
-               echo "</p>
-                <p><strong>Estrategias de calidad:</strong> ";
-               if (isset($aprendizajes_info[$aprendizaje_principal]['estrategias_calidad'])) {
-                    echo htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['estrategias_calidad']);
-                }
-               echo "</p>
+        <div class='resultado'>
+            <h2>Cultura de Aprendizaje</h2>
+            <div class='grid-container'>
+                <div class='cultura-box'>
+                    <h3>Dimensión Principal: {$aprendizaje_principal}</h3>";
+                    
+                    if (isset($aprendizajes_info[$aprendizaje_principal]['diagnostico'])) {
+                        echo "<p><strong>Resumen:</strong><br>".htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['diagnostico'])."</p>";
+                    }
+                    if (isset($aprendizajes_info[$aprendizaje_principal]['lider'])) {
+                        echo "<p><strong>Líder:</strong><br>".htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['lider'])."</p>";
+                    }
+                    if (isset($aprendizajes_info[$aprendizaje_principal]['impulsores_valor'])) {
+                        echo "<p><strong>Impulsores de valor:</strong><br>".htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['impulsores_valor'])."</p>";
+                    }
+                    if (isset($aprendizajes_info[$aprendizaje_principal]['teoria_efectividad'])) {
+                        echo "<p><strong>Teoría de la efectividad:</strong><br>".htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['teoria_efectividad'])."</p>";
+                    }
+                    if (isset($aprendizajes_info[$aprendizaje_principal]['estrategias_calidad'])) {
+                        echo "<p><strong>Estrategias de calidad:</strong><br>".htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['estrategias_calidad'])."</p>";
+                    }
+                    
+                echo "</div>
+                <div>
+                    <h3>Detalle de Dimensiones</h3>
+                    <table>
+                        <tr>
+                            <th>Dimensión</th>
+                            <th>Puntuación (%)</th>
+                        </tr>";
 
-                <h3>Detalle de Dimensiones</h3>
-                <table>
-                    <tr>
-                        <th>Dimensión</th>
-                        <th>Puntuación (%)</th>
-                    </tr>";
+                        foreach ($resultados['detalles_aprendizaje'] as $dimension => $puntuacion) {
+                            $puntuacion_porcentaje = round(($puntuacion / $total_aprendizaje) * 100, 2);
+                            echo "<tr>
+                                <td>$dimension</td>
+                                <td>$puntuacion_porcentaje%</td>
+                            </tr>";
+                        }
 
-    $i = 0;
-    foreach ($resultados['detalles_aprendizaje'] as $dimension => $puntuacion) {
-        $puntuacion_porcentaje = round(($puntuacion / $total_aprendizaje) * 100, 2);
-        echo "<tr>
-                    <td>$dimension</td>
-                    <td>$puntuacion_porcentaje%</td>
-                </tr>";
-        $i++;
-    }
-
-    echo "</table>
+                    echo "</table>
+                </div>
+            </div>
+            <div class='contenedor-grafico-aprendizajes'>
                 <canvas id='chartAprendizaje'></canvas>
             </div>
+            
+        </div>
 
-            <div class='resultado'>
-                <h2>Conclusión</h2>
-                <p>";
-                 if (isset($aprendizajes_info[$aprendizaje_principal]['conclusion'])) {
-                    echo htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['conclusion']);
-                }
-               echo "</p>
-            </div>
+        <div class='conclusion-box'>
+            <h2>Conclusión</h2>
+            <p>Según tus respuestas, <br>" . htmlspecialchars($culturas_info[$cultura_actual]['conclusion']) . "<br><br>Pero preferirías: <br>" . htmlspecialchars($culturas_info[$cultura_deseada]['conclusion']) . "<br><br>En cuanto al entorno de aprendizaje que prefieres, es más: <br>" . htmlspecialchars($aprendizajes_info[$aprendizaje_principal]['conclusion']) . "</p>
+        </div>
+    </div>
 
         </div>
 
@@ -636,7 +659,7 @@ function mostrarResultados($resultados) {
                     },
                     elements: {
                         line: {
-                            tension: 4 // Ajustar la tensión de la línea para redondear las esquinas
+                            tension: 0.4 // Ajustar la tensión de la línea para redondear las esquinas
                         }
                     }
                 }
@@ -653,7 +676,7 @@ function mostrarFormulario() {
     <html lang='es'>
     <head>
         <meta charset='UTF-8'>
-        <title>Diagnóstico Organizacional</title>
+        <title>Diagnóstico organizacional</title>
         <style>
             body {
                 font-family: Arial, sans-serif;
@@ -693,7 +716,7 @@ function mostrarFormulario() {
     </head>
     <body>
 
-        <h1>Diagnóstico de Cultura Organizacional y Aprendizaje</h1>
+        <h1>Diagnóstico de cultura organizacional y aprendizaje</h1>
         <form method='post' action='diagnosticoCultura.php'>
             
             <h2>Datos del Participante</h2>
